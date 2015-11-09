@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+    <title>Socket Example</title>
+    <head>
+        <script type="text/javascript">
+            // open a connection to the server:
+            var ws = new WebSocket("ws://localhost:8080/websocket");
+            var reader = new FileReader();
+            /*
+            function draw(data){
+                var ctx = document.getElementById('sample').getContext('2d');
+                var url = URL.createObjectURL(data);
+                var img = new Image();
+                img.onload = function() {
+                    ctx.drawImage(img, 0, 0);
+                }
+                img.src = url;
+            }
+            */
+            var i = 0;
+            function start(i) {
+                var canvas = document.getElementById('sample');
+                if(!canvas) {
+                    console.log('Canvas要素の取得に失敗');
+                    return;
+                }
+                var context = canvas.getContext('2d');
+                if( i%2 == 0){
+                    context.fillStyle='rgba(255, 0, 0, 1.0)';
+                    context.fillRect(70, 50, 250, 200);
+                }else{
+                    context.fillStyle='rgba(0, 255, 0, 1.0)';
+                    context.fillRect(70, 50, 250, 200);
+                }
+            }
+            function start2(i) {
+                var canvas = document.getElementById('sample');
+                if(!canvas) {
+                    console.log('Canvas要素の取得に失敗');
+                    return;
+                }
+                var context = canvas.getContext('2d');
+                var image = new Image();
+                image.onload = function() {
+                    console.log('onloadの中です');
+                    context.drawImage(image, 0, 0);
+                };
+                if( i%2 == 0){
+                    image.src = 'static/img/RX-8_1.jpg';
+                }else{
+                    image.src = 'static/img/RX-8_2.jpg';
+                }
+            }
+            function start3(data) {
+                var canvasTmp = document.getElementById('sampleTmp');
+                var canvas = document.getElementById('sample');
+                console.log(data.size);
+                console.log(data.type);
+                if(!canvasTmp) {
+                    console.log('Canvas要素の取得に失敗');
+                    return;
+                }
+                var contextTmp = canvasTmp.getContext('2d');
+                var context = canvas.getContext('2d');
+                var image = new Image();
+                image.onload = function() {
+                    //console.log('onloadの中です');
+                    reader.onload = function() {
+                    //reader.addEventListener("loadend", function() {
+                        console.log(reader.readyState);
+                        var generatedBuffer = reader.result;
+                        var imageDataBytes = new Uint8Array(generatedBuffer); 
+                        //context.drawImage(image, 0, 0);
+                        var imageData = contextTmp.getImageData(0,0, 60, 60);
+                        //console.log(imageData.height);
+                        var width = 4 * imageData.width;
+                        var height = imageData.height;
+                        for(var i = 0; i < width * height; i += 4) {
+                            var gray = imageDataBytes[i / 4];
+                            imageData.data[i + 0] = gray;
+                            imageData.data[i + 1] = gray;
+                            imageData.data[i + 2] = gray;
+                            imageData.data[i + 3] = 250;
+                        }
+                        //context.scale(2,2);
+                        contextTmp.putImageData(imageData, 0, 0);
+                        context.drawImage(canvasTmp, 0,0,60,60,0,0,240,240);
+
+                    };
+                    reader.readAsArrayBuffer(data);
+
+                };
+                //image.src = url;
+                image.src = 'static/img/RX-8_1.jpi';
+            }
+            function start4(data) {
+                var canvas = document.getElementById('sample');
+                var url = URL.createObjectURL(data);
+                console.log(data.size);
+                console.log(data.type);
+                if(!canvas) {
+                    console.log('Canvas要素の取得に失敗');
+                    return;
+                }
+                var context = canvas.getContext('2d');
+                var image = new Image();
+                image.onload = function() {
+                    console.log('onloadの中です');
+                    //reader.onload = function() {
+                    reader.addEventListener("loadend", function() {
+                        var generatedBuffer = reader.result;
+                        var imageDataBytes = new Uint8Array(generatedBuffer); 
+                        context.drawImage(image, 0, 0);
+                        var imageData = context.getImageData(0,0, 60, 60);
+                        //console.log(imageData.height);
+                        var width = 4 * imageData.width;
+                        var height = imageData.height;
+                        for(var i = 0; i < width * height; i += 4) {
+                            var gray = imageDataBytes[i / 4];
+                            imageData.data[i + 0] = gray;
+                            imageData.data[i + 1] = gray;
+                            imageData.data[i + 2] = gray;
+                            imageData.data[i + 3] = 250;
+                        }
+                        //context.scale(2,2);
+                        context.putImageData(imageData, 0, 0);
+                        //context.drawImage(canvas, 0,0,60,60,0,0,240,240);
+
+                        //var scaledImage = new Image();
+                        //scaledImage.src = canvas.toDataURL();
+                        //var imageData = context.getImageData(0,0,45,45)
+
+                    });
+                    reader.readAsArrayBuffer(data);
+
+                };
+                //image.src = url;
+                image.src = 'static/img/RX-8_1.jpi';
+            }
+
+            ws.onopen = function() {
+                console.log('Connection open!');
+                ws.send('open!');
+            };
+            ws.binaryType = 'blob';
+            /*
+            ws.onmessage = function(data) {
+                var ctx = document.getElementById('sample').getContext('2d');
+                var img = new Image;
+                img.onload = function() {
+                    ctx.drawImage(img, 20, 20);
+                }
+                buffer = URL.createObjectURL(data.data);
+                console.log(buffer);
+                img.src  = buffer;
+                ws.send('');
+            };
+            */
+            ws.onmessage = function(data) {
+                //start(i);
+                //start2(i);
+                start3(data.data);
+                i = i+ 1;
+            };
+        </script>
+    </head>
+
+    <!--
+    <body onload="draw();">
+    -->
+    <body>
+        <canvas id="sample" width="240" height="240" stype="background-color:yellow;">
+        </canvas>
+        <canvas id="sampleTmp" width="60" height="60" stype="background-color:yellow;" >
+        </canvas>
+    </body>
+</html>
